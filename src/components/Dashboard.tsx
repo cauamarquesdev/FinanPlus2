@@ -15,6 +15,8 @@ import { format, subMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Wallet, TrendingUp, PieChart, DollarSign } from "lucide-react";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 interface Transaction {
   id: number;
   client_id: number | null;
@@ -37,7 +39,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
-        const response = await fetch("http://localhost:3000/transactions");
+        const response = await fetch(`${API_URL}/transactions`);
 
         if (!response.ok) {
           throw new Error("Erro ao buscar transações");

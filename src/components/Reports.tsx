@@ -17,6 +17,8 @@ import {
 import { Download, Filter } from "lucide-react";
 import * as XLSX from "xlsx";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 interface Transaction {
   id: number;
   client_id: number;
@@ -52,8 +54,8 @@ const Reports = () => {
     const loadData = async () => {
       try {
         const [transactionsResponse, sectorsResponse] = await Promise.all([
-          fetch("http://localhost:3000/transactions"),
-          fetch("http://localhost:3000/sectors"),
+          fetch(`${API_URL}/transactions`),
+          fetch(`${API_URL}/sectors`),
         ]);
 
         if (!transactionsResponse.ok) {
