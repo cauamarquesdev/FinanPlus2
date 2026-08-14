@@ -2,6 +2,8 @@ const express = require("express");
 const pool = require("../db");
 
 const router = express.Router();
+const authenticateToken = require("../middleware/auth");
+router.use(authenticateToken);
 
 // GET - buscar apenas clientes ativos
 router.get("/", async (req, res) => {
@@ -11,8 +13,10 @@ router.get("/", async (req, res) => {
       SELECT *
       FROM clients
       WHERE status = 'active'
+        AND user_id = $1
       ORDER BY id DESC
       `,
+      [req.user.id],
     );
 
     res.json(result.rows);
@@ -38,18 +42,27 @@ router.post("/", async (req, res) => {
 
     const result = await pool.query(
       `
-      INSERT INTO clients (
+  INSERT INTO clients (
+    company_name,
+    type,
+    contact,
+    email,
+    phone,
+    status,
+    user_id
+  )
+  VALUES ($1, $2, $3, $4, $5, $6, $7)
+  RETURNING *
+  `,
+      [
         company_name,
         type,
         contact,
         email,
         phone,
-        status
-      )
-      VALUES ($1, $2, $3, $4, $5, $6)
-      RETURNING *
-      `,
-      [company_name, type, contact, email, phone, status || "active"],
+        status || "active",
+        req.user.id,
+      ],
     );
 
     res.status(201).json(result.rows[0]);
@@ -86,9 +99,10 @@ router.patch("/:id", async (req, res) => {
         phone = $5,
         status = $6
       WHERE id = $7
+        AND user_id = $8
       RETURNING *
       `,
-      [company_name, type, contact, email, phone, status, id],
+      [company_name, type, contact, email, phone, status, id, req.user.id],
     );
 
     if (result.rows.length === 0) {
@@ -117,9 +131,10 @@ router.delete("/:id", async (req, res) => {
       UPDATE clients
       SET status = 'inactive'
       WHERE id = $1
+        AND user_id = $2
       RETURNING *
       `,
-      [id],
+      [id, req.user.id],
     );
 
     if (result.rows.length === 0) {

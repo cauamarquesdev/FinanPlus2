@@ -5,6 +5,7 @@ const dotenv = require("dotenv");
 const clientsRoutes = require("./routes/clients");
 const transactionsRoutes = require("./routes/transactions");
 const sectorsRoutes = require("./routes/sectors");
+const authRoutes = require("./routes/auth");
 
 const pool = require("./db");
 
@@ -43,6 +44,7 @@ app.use(
 );
 
 app.use(express.json());
+app.use("/auth", authRoutes);
 
 app.use("/clients", clientsRoutes);
 app.use("/transactions", transactionsRoutes);
