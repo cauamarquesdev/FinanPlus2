@@ -3,13 +3,21 @@ const pool = require("../db");
 
 const router = express.Router();
 
+// GET - buscar apenas clientes ativos
 router.get("/", async (req, res) => {
   try {
-    const result = await pool.query("SELECT * FROM clients ORDER BY id DESC");
+    const result = await pool.query(
+      `
+      SELECT *
+      FROM clients
+      WHERE status = 'active'
+      ORDER BY id DESC
+      `,
+    );
 
     res.json(result.rows);
   } catch (error) {
-    console.error(error);
+    console.error("Erro ao buscar clientes:", error);
 
     res.status(500).json({
       message: "Erro ao buscar clientes.",
@@ -17,6 +25,7 @@ router.get("/", async (req, res) => {
   }
 });
 
+// POST - cadastrar cliente
 router.post("/", async (req, res) => {
   try {
     const { company_name, type, contact, email, phone, status } = req.body;
@@ -45,7 +54,7 @@ router.post("/", async (req, res) => {
 
     res.status(201).json(result.rows[0]);
   } catch (error) {
-    console.error(error);
+    console.error("Erro ao cadastrar cliente:", error);
 
     res.status(500).json({
       message: "Erro ao cadastrar cliente.",
@@ -53,6 +62,7 @@ router.post("/", async (req, res) => {
   }
 });
 
+// PATCH - editar cliente
 router.patch("/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -97,35 +107,15 @@ router.patch("/:id", async (req, res) => {
   }
 });
 
+// DELETE - remover cliente da lista sem apagar transações
 router.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Verifica se existem transações vinculadas ao cliente
-    const transactions = await pool.query(
-      `
-      SELECT COUNT(*)::int AS total
-      FROM transactions
-      WHERE client_id = $1
-      `,
-      [id],
-    );
-
-    const totalTransactions = transactions.rows[0].total;
-
-    // Se houver transações, não permite excluir
-    if (totalTransactions > 0) {
-      return res.status(409).json({
-        message:
-          "Este cliente possui transações vinculadas e não pode ser excluído.",
-        transactions: totalTransactions,
-      });
-    }
-
-    // Se não houver transações, exclui o cliente
     const result = await pool.query(
       `
-      DELETE FROM clients
+      UPDATE clients
+      SET status = 'inactive'
       WHERE id = $1
       RETURNING *
       `,
@@ -138,16 +128,15 @@ router.delete("/:id", async (req, res) => {
       });
     }
 
-    return res.json({
-      message: "Cliente excluído com sucesso.",
+    res.json({
+      message: "Cliente removido com sucesso.",
       client: result.rows[0],
     });
   } catch (error) {
-    console.error("Erro ao excluir cliente:", error);
+    console.error("Erro ao remover cliente:", error);
 
-    return res.status(500).json({
-      message: "Erro ao excluir cliente.",
-      error: error.message,
+    res.status(500).json({
+      message: "Erro ao remover cliente.",
     });
   }
 });

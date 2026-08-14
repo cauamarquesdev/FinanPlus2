@@ -91,6 +91,40 @@ const Clients = () => {
     setShowModal(true);
   };
 
+  const handleDelete = async (clientId: number) => {
+    const confirmed = window.confirm(
+      "Tem certeza que deseja excluir este cliente? As transações dele serão mantidas.",
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/clients/${clientId}`, {
+        method: "DELETE",
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Erro ao excluir cliente.");
+      }
+
+      setClients((previous) =>
+        previous.filter((client) => client.id !== clientId),
+      );
+
+      alert("Cliente removido com sucesso. As transações foram mantidas.");
+    } catch (error) {
+      console.error("Erro ao excluir cliente:", error);
+
+      alert(
+        error instanceof Error ? error.message : "Erro ao excluir cliente.",
+      );
+    }
+  };
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
@@ -413,7 +447,10 @@ const Clients = () => {
 
                       <span className="mx-2">|</span>
 
-                      <button className="text-red-600 hover:text-red-800">
+                      <button
+                        onClick={() => handleDelete(client.id)}
+                        className="text-red-600 hover:text-red-800"
+                      >
                         Excluir
                       </button>
                     </td>
