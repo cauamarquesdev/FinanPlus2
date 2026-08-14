@@ -93,7 +93,7 @@ const Clients = () => {
 
   const handleDelete = async (clientId: number) => {
     const confirmed = window.confirm(
-      "Tem certeza que deseja excluir este cliente? As transações dele serão mantidas.",
+      "Tem certeza que deseja excluir este cliente?",
     );
 
     if (!confirmed) {
@@ -103,19 +103,25 @@ const Clients = () => {
     try {
       const response = await fetch(`${API_URL}/clients/${clientId}`, {
         method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
 
       const data = await response.json();
 
+      console.log("Resposta da exclusão:", data);
+
       if (!response.ok) {
-        throw new Error(data.message || "Erro ao excluir cliente.");
+        throw new Error(data.message || "Erro ao excluir cliente");
       }
 
+      // Remove imediatamente da tela
       setClients((previous) =>
         previous.filter((client) => client.id !== clientId),
       );
 
-      alert("Cliente removido com sucesso. As transações foram mantidas.");
+      alert("Cliente excluído com sucesso!");
     } catch (error) {
       console.error("Erro ao excluir cliente:", error);
 
@@ -448,6 +454,7 @@ const Clients = () => {
                       <span className="mx-2">|</span>
 
                       <button
+                        type="button"
                         onClick={() => handleDelete(client.id)}
                         className="text-red-600 hover:text-red-800"
                       >
