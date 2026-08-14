@@ -50,9 +50,39 @@ router.post("/", async (req, res) => {
       transaction_date,
     } = req.body;
 
+    // Campos obrigatórios
     if (!type || !payer || !amount || !transaction_date) {
       return res.status(400).json({
         message: "Tipo, pagador, valor e data são obrigatórios.",
+      });
+    }
+
+    // Regra de negócio:
+    // Receita = Cliente
+    // Despesa = Usuário
+    if (type === "income" && payer !== "client") {
+      return res.status(400).json({
+        message: "Uma receita deve ser paga pelo cliente.",
+      });
+    }
+
+    if (type === "expense" && payer !== "user") {
+      return res.status(400).json({
+        message: "Uma despesa deve ser paga pelo usuário.",
+      });
+    }
+
+    // Verifica se o tipo é válido
+    if (!["income", "expense"].includes(type)) {
+      return res.status(400).json({
+        message: "Tipo de transação inválido.",
+      });
+    }
+
+    // Verifica se o pagador é válido
+    if (!["client", "user"].includes(payer)) {
+      return res.status(400).json({
+        message: "Pagador inválido.",
       });
     }
 

@@ -187,10 +187,20 @@ const Clients = () => {
   ) => {
     const { name, value } = event.target;
 
-    setTransactionForm((previous) => ({
-      ...previous,
-      [name]: value,
-    }));
+    setTransactionForm((previous) => {
+      if (name === "type") {
+        return {
+          ...previous,
+          type: value as "income" | "expense",
+          payer: value === "income" ? "client" : "user",
+        };
+      }
+
+      return {
+        ...previous,
+        [name]: value,
+      };
+    });
   };
 
   const openTransactionModal = (clientId: number) => {
@@ -625,15 +635,22 @@ const Clients = () => {
                 </label>
 
                 <select
-                  name="payer"
                   value={transactionForm.payer}
-                  onChange={handleTransactionChange}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5"
+                  disabled
+                  className="w-full rounded-lg border border-gray-300 bg-gray-100 px-4 py-2.5 text-gray-700"
                 >
-                  <option value="client">Cliente</option>
-
-                  <option value="user">Usuário</option>
+                  {transactionForm.payer === "client" ? (
+                    <option value="client">Cliente</option>
+                  ) : (
+                    <option value="user">Usuário</option>
+                  )}
                 </select>
+
+                <p className="mt-1 text-xs text-gray-500">
+                  {transactionForm.type === "income"
+                    ? "Receitas são pagamentos realizados pelo cliente."
+                    : "Despesas são pagamentos realizados pelo usuário."}
+                </p>
               </div>
 
               {/* SETOR */}
@@ -719,19 +736,7 @@ const Clients = () => {
               <div className="flex justify-end gap-3 border-t pt-5">
                 <button
                   type="button"
-                  onClick={() => {
-                    setShowModal(false);
-                    setEditingClientId(null);
-
-                    setFormData({
-                      company_name: "",
-                      type: "Pessoa Jurídica",
-                      contact: "",
-                      email: "",
-                      phone: "",
-                      status: "active",
-                    });
-                  }}
+                  onClick={() => setShowTransactionModal(false)}
                   className="rounded-lg border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50"
                 >
                   Cancelar
