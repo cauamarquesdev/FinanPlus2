@@ -1,8 +1,9 @@
 const express = require("express");
 const pool = require("../db");
+const authenticateToken = require("../middleware/auth");
 
 const router = express.Router();
-const authenticateToken = require("../middleware/auth");
+
 router.use(authenticateToken);
 
 // GET - buscar apenas clientes ativos
