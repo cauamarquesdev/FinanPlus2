@@ -4,6 +4,12 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 const authenticateToken = (req, res, next) => {
   try {
+    if (!JWT_SECRET) {
+      return res.status(500).json({
+        message: "JWT_SECRET não configurado no servidor.",
+      });
+    }
+
     const authHeader = req.headers.authorization;
 
     if (!authHeader) {
@@ -26,6 +32,8 @@ const authenticateToken = (req, res, next) => {
 
     next();
   } catch (error) {
+    console.error("Erro na autenticação:", error);
+
     return res.status(401).json({
       message: "Token inválido ou expirado.",
     });

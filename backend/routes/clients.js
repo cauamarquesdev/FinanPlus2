@@ -4,14 +4,23 @@ const authenticateToken = require("../middleware/auth");
 
 const router = express.Router();
 
+// Todas as rotas de clientes exigem autenticação
 router.use(authenticateToken);
 
-// GET - buscar apenas clientes ativos
+// GET - buscar apenas clientes ativos do usuário logado
 router.get("/", async (req, res) => {
   try {
     const result = await pool.query(
       `
-      SELECT *
+      SELECT
+        id,
+        company_name,
+        type,
+        contact,
+        email,
+        phone,
+        status,
+        user_id
       FROM clients
       WHERE status = 'active'
         AND user_id = $1
@@ -35,7 +44,9 @@ router.post("/", async (req, res) => {
   try {
     const { company_name, type, contact, email, phone, status } = req.body;
 
-    if (!company_name) {
+    const normalizedCompanyName = company_name?.trim();
+
+    if (!normalizedCompanyName) {
       return res.status(400).json({
         message: "Nome da empresa é obrigatório.",
       });
@@ -43,24 +54,24 @@ router.post("/", async (req, res) => {
 
     const result = await pool.query(
       `
-  INSERT INTO clients (
-    company_name,
-    type,
-    contact,
-    email,
-    phone,
-    status,
-    user_id
-  )
-  VALUES ($1, $2, $3, $4, $5, $6, $7)
-  RETURNING *
-  `,
-      [
+      INSERT INTO clients (
         company_name,
         type,
         contact,
         email,
         phone,
+        status,
+        user_id
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      RETURNING *
+      `,
+      [
+        normalizedCompanyName,
+        type || null,
+        contact || null,
+        email || null,
+        phone || null,
         status || "active",
         req.user.id,
       ],
@@ -83,7 +94,9 @@ router.patch("/:id", async (req, res) => {
 
     const { company_name, type, contact, email, phone, status } = req.body;
 
-    if (!company_name) {
+    const normalizedCompanyName = company_name?.trim();
+
+    if (!normalizedCompanyName) {
       return res.status(400).json({
         message: "Nome da empresa é obrigatório.",
       });
@@ -103,7 +116,16 @@ router.patch("/:id", async (req, res) => {
         AND user_id = $8
       RETURNING *
       `,
-      [company_name, type, contact, email, phone, status, id, req.user.id],
+      [
+        normalizedCompanyName,
+        type || null,
+        contact || null,
+        email || null,
+        phone || null,
+        status || "active",
+        id,
+        req.user.id,
+      ],
     );
 
     if (result.rows.length === 0) {
@@ -122,7 +144,7 @@ router.patch("/:id", async (req, res) => {
   }
 });
 
-// DELETE - remover cliente da lista sem apagar transações
+// DELETE - desativar cliente
 router.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;

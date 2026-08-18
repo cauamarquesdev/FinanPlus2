@@ -1,12 +1,14 @@
 const express = require("express");
 const pool = require("../db");
+const authenticateToken = require("../middleware/auth");
 
 const router = express.Router();
 
-// GET - buscar todas as transações
-router.get("/", async (req, res) => {
+// GET - buscar apenas as transações do usuário logado
+router.get("/", authenticateToken, async (req, res) => {
   try {
-    const result = await pool.query(`
+    const result = await pool.query(
+      `
       SELECT
         t.id,
         t.client_id,
@@ -18,14 +20,18 @@ router.get("/", async (req, res) => {
         t.description,
         t.amount,
         t.transaction_date,
-        t.created_at
+        t.created_at,
+        t.user_id
       FROM transactions t
       LEFT JOIN clients c
         ON t.client_id = c.id
       LEFT JOIN sectors s
         ON t.sector_id = s.id
+      WHERE t.user_id = $1
       ORDER BY t.transaction_date DESC, t.id DESC
-    `);
+      `,
+      [req.user.id],
+    );
 
     res.json(result.rows);
   } catch (error) {
@@ -37,8 +43,8 @@ router.get("/", async (req, res) => {
   }
 });
 
-// POST - criar uma transação
-router.post("/", async (req, res) => {
+// POST - criar transação
+router.post("/", authenticateToken, async (req, res) => {
   try {
     const {
       client_id,
@@ -50,41 +56,73 @@ router.post("/", async (req, res) => {
       transaction_date,
     } = req.body;
 
-    // Campos obrigatórios
+    const user_id = req.user.id;
+
+    // ==============================
+    // VALIDAÇÕES
+    // ==============================
+
     if (!type || !payer || !amount || !transaction_date) {
       return res.status(400).json({
         message: "Tipo, pagador, valor e data são obrigatórios.",
       });
     }
 
-    // Regra de negócio:
-    // Receita = Cliente
-    // Despesa = Usuário
-    if (type === "income" && payer !== "client") {
-      return res.status(400).json({
-        message: "Uma receita deve ser paga pelo cliente.",
-      });
-    }
-
-    if (type === "expense" && payer !== "user") {
-      return res.status(400).json({
-        message: "Uma despesa deve ser paga pelo usuário.",
-      });
-    }
-
-    // Verifica se o tipo é válido
     if (!["income", "expense"].includes(type)) {
       return res.status(400).json({
         message: "Tipo de transação inválido.",
       });
     }
 
-    // Verifica se o pagador é válido
     if (!["client", "user"].includes(payer)) {
       return res.status(400).json({
         message: "Pagador inválido.",
       });
     }
+
+    // ==============================
+    // REGRA DE NEGÓCIO
+    // ==============================
+
+    // Receita = dinheiro recebido do cliente
+    if (type === "income" && payer !== "client") {
+      return res.status(400).json({
+        message: "Uma receita deve ser paga pelo cliente.",
+      });
+    }
+
+    // Despesa = dinheiro pago pelo usuário
+    if (type === "expense" && payer !== "user") {
+      return res.status(400).json({
+        message: "Uma despesa deve ser paga pelo usuário.",
+      });
+    }
+
+    // ==============================
+    // VERIFICAR CLIENTE
+    // ==============================
+
+    if (client_id) {
+      const clientResult = await pool.query(
+        `
+        SELECT id
+        FROM clients
+        WHERE id = $1
+          AND user_id = $2
+        `,
+        [client_id, user_id],
+      );
+
+      if (clientResult.rows.length === 0) {
+        return res.status(404).json({
+          message: "Cliente não encontrado.",
+        });
+      }
+    }
+
+    // ==============================
+    // INSERIR TRANSAÇÃO
+    // ==============================
 
     const result = await pool.query(
       `
@@ -95,9 +133,10 @@ router.post("/", async (req, res) => {
         payer,
         description,
         amount,
-        transaction_date
+        transaction_date,
+        user_id
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *
       `,
       [
@@ -105,9 +144,10 @@ router.post("/", async (req, res) => {
         sector_id || null,
         type,
         payer,
-        description || null,
-        amount,
+        description?.trim() || null,
+        Number(amount),
         transaction_date,
+        user_id,
       ],
     );
 
