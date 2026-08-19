@@ -1,12 +1,13 @@
 const jwt = require("jsonwebtoken");
 
-const JWT_SECRET = process.env.JWT_SECRET;
-
 const authenticateToken = (req, res, next) => {
   try {
+    const JWT_SECRET = process.env.JWT_SECRET;
+
     if (!JWT_SECRET) {
+      console.error("JWT_SECRET não configurado.");
       return res.status(500).json({
-        message: "JWT_SECRET não configurado no servidor.",
+        message: "Erro interno de configuração do servidor.",
       });
     }
 
@@ -32,7 +33,7 @@ const authenticateToken = (req, res, next) => {
 
     next();
   } catch (error) {
-    console.error("Erro na autenticação:", error);
+    console.error("Erro na autenticação:", error.message);
 
     return res.status(401).json({
       message: "Token inválido ou expirado.",

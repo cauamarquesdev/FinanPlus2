@@ -4,7 +4,10 @@ const authenticateToken = require("../middleware/auth");
 
 const router = express.Router();
 
-// GET - buscar apenas as transações do usuário logado
+// ==========================================
+// GET - TRANSAÇÕES DO USUÁRIO LOGADO
+// ==========================================
+
 router.get("/", authenticateToken, async (req, res) => {
   try {
     const result = await pool.query(
@@ -43,7 +46,10 @@ router.get("/", authenticateToken, async (req, res) => {
   }
 });
 
-// POST - criar transação
+// ==========================================
+// POST - CRIAR TRANSAÇÃO
+// ==========================================
+
 router.post("/", authenticateToken, async (req, res) => {
   try {
     const {
@@ -58,11 +64,11 @@ router.post("/", authenticateToken, async (req, res) => {
 
     const user_id = req.user.id;
 
-    // ==============================
+    // ==========================================
     // VALIDAÇÕES
-    // ==============================
+    // ==========================================
 
-    if (!type || !payer || !amount || !transaction_date) {
+    if (!type || !payer || amount === undefined || !transaction_date) {
       return res.status(400).json({
         message: "Tipo, pagador, valor e data são obrigatórios.",
       });
@@ -80,27 +86,35 @@ router.post("/", authenticateToken, async (req, res) => {
       });
     }
 
-    // ==============================
-    // REGRA DE NEGÓCIO
-    // ==============================
+    const numericAmount = Number(amount);
 
-    // Receita = dinheiro recebido do cliente
+    if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
+      return res.status(400).json({
+        message: "O valor da transação deve ser maior que zero.",
+      });
+    }
+
+    // ==========================================
+    // REGRA DE NEGÓCIO
+    // ==========================================
+
+    // Receita = cliente paga
     if (type === "income" && payer !== "client") {
       return res.status(400).json({
         message: "Uma receita deve ser paga pelo cliente.",
       });
     }
 
-    // Despesa = dinheiro pago pelo usuário
+    // Despesa = usuário paga
     if (type === "expense" && payer !== "user") {
       return res.status(400).json({
         message: "Uma despesa deve ser paga pelo usuário.",
       });
     }
 
-    // ==============================
+    // ==========================================
     // VERIFICAR CLIENTE
-    // ==============================
+    // ==========================================
 
     if (client_id) {
       const clientResult = await pool.query(
@@ -120,9 +134,9 @@ router.post("/", authenticateToken, async (req, res) => {
       }
     }
 
-    // ==============================
+    // ==========================================
     // INSERIR TRANSAÇÃO
-    // ==============================
+    // ==========================================
 
     const result = await pool.query(
       `
@@ -145,7 +159,7 @@ router.post("/", authenticateToken, async (req, res) => {
         type,
         payer,
         description?.trim() || null,
-        Number(amount),
+        numericAmount,
         transaction_date,
         user_id,
       ],
