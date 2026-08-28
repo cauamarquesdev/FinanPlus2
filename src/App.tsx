@@ -6,6 +6,7 @@ import Settings from "./components/Settings";
 import Login from "./components/Login";
 import { TransactionsManager } from "./components/TransactionsManager";
 import { User } from "./types";
+import CfoCopilot from "./components/CfoCopilot";
 import CommandPalette from "./components/CommandPalette";
 import {
   LayoutDashboard,
@@ -238,6 +239,9 @@ function App() {
           {currentPage === "settings" && <Settings />}
         </main>
       </div>
+
+      {/* CFO Copilot IA Widget */}
+      <CfoCopilot />
     </div>
   );
 }

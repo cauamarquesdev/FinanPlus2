@@ -11,6 +11,7 @@ const clientsRoutes = require("./routes/clients");
 const transactionsRoutes = require("./routes/transactions");
 const sectorsRoutes = require("./routes/sectors");
 const aiRoutes = require("./routes/ai");
+const chatRoutes = require("./routes/chat");
 
 const app = express();
 
@@ -50,6 +51,7 @@ app.use("/clients", clientsRoutes);
 app.use("/transactions", transactionsRoutes);
 app.use("/sectors", sectorsRoutes);
 app.use("/ai", aiRoutes);
+app.use("/chat", chatRoutes);
 
 // Health Check do Sistema
 app.get("/health", async (req, res) => {
