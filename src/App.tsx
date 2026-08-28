@@ -9,12 +9,14 @@ import CashFlowForecast from "./components/CashFlowForecast";
 import ProfitAnalytics from "./components/ProfitAnalytics";
 import ExecutiveHub from "./components/ExecutiveHub";
 import CreditAndSchedule from "./components/CreditAndSchedule";
+import ProfitRecoveryEngine from "./components/ProfitRecoveryEngine";
 import { User } from "./types";
 import CfoCopilot from "./components/CfoCopilot";
 import CommandPalette from "./components/CommandPalette";
 import {
   LayoutDashboard,
   Receipt,
+  Sparkles,
   Award,
   TrendingUp,
   Briefcase,
@@ -31,6 +33,7 @@ import {
 
 type Page =
   | "dashboard"
+  | "recovery"
   | "transactions"
   | "profit"
   | "forecast"
@@ -91,6 +94,7 @@ function App() {
 
   const navItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { id: "recovery", label: "Lucro Oculto & Tesouraria", icon: Sparkles },
     { id: "transactions", label: "Lançamentos", icon: Receipt },
     { id: "profit", label: "Lucratividade & EBITDA", icon: Award },
     { id: "forecast", label: "Previsão & Forecast", icon: TrendingUp },
@@ -159,6 +163,7 @@ function App() {
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = currentPage === item.id;
+                const isSpecial = item.id === "recovery";
                 return (
                   <button
                     key={item.id}
@@ -170,11 +175,19 @@ function App() {
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition cursor-pointer ${
                       isActive
                         ? "bg-slate-800 text-white font-semibold"
-                        : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
+                        : isSpecial
+                          ? "text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10"
+                          : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
                     }`}
                   >
                     <Icon
-                      className={`h-4 w-4 ${isActive ? "text-emerald-400" : "text-slate-400"}`}
+                      className={`h-4 w-4 ${
+                        isActive
+                          ? "text-emerald-400"
+                          : isSpecial
+                            ? "text-emerald-400 animate-pulse"
+                            : "text-slate-400"
+                      }`}
                     />
                     <span>{item.label}</span>
                   </button>
@@ -230,6 +243,8 @@ function App() {
               </div>
               <h1 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight">
                 {currentPage === "dashboard" && "Visão Geral & Stress Testing"}
+                {currentPage === "recovery" &&
+                  "Otimizador de Lucro Oculto & Piloto de Tesouraria"}
                 {currentPage === "transactions" &&
                   "Gestão de Lançamentos & Provisões"}
                 {currentPage === "profit" &&
@@ -262,6 +277,7 @@ function App() {
 
         <main className="flex-1 p-4 sm:p-8 max-w-7xl w-full mx-auto overflow-y-auto print:p-0 print:max-w-none">
           {currentPage === "dashboard" && <Dashboard />}
+          {currentPage === "recovery" && <ProfitRecoveryEngine />}
           {currentPage === "transactions" && <TransactionsManager />}
           {currentPage === "profit" && <ProfitAnalytics />}
           {currentPage === "forecast" && <CashFlowForecast />}
