@@ -10,6 +10,7 @@ import ProfitAnalytics from "./components/ProfitAnalytics";
 import ExecutiveHub from "./components/ExecutiveHub";
 import CreditAndSchedule from "./components/CreditAndSchedule";
 import ProfitRecoveryEngine from "./components/ProfitRecoveryEngine";
+import AdvancedIntelligenceHub from "./components/AdvancedIntelligenceHub";
 import { User } from "./types";
 import CfoCopilot from "./components/CfoCopilot";
 import CommandPalette from "./components/CommandPalette";
@@ -25,6 +26,7 @@ import {
   PieChart,
   Settings as SettingsIcon,
   LogOut,
+  Zap,
   Menu,
   X,
   ChevronRight,
@@ -34,6 +36,7 @@ import {
 type Page =
   | "dashboard"
   | "recovery"
+  | "intelligence"
   | "transactions"
   | "profit"
   | "forecast"
@@ -95,6 +98,7 @@ function App() {
   const navItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
     { id: "recovery", label: "Lucro Oculto & Tesouraria", icon: Sparkles },
+    { id: "intelligence", label: "Valuation & Inteligência", icon: Zap },
     { id: "transactions", label: "Lançamentos", icon: Receipt },
     { id: "profit", label: "Lucratividade & EBITDA", icon: Award },
     { id: "forecast", label: "Previsão & Forecast", icon: TrendingUp },
@@ -163,7 +167,8 @@ function App() {
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = currentPage === item.id;
-                const isSpecial = item.id === "recovery";
+                const isSpecial =
+                  item.id === "recovery" || item.id === "intelligence";
                 return (
                   <button
                     key={item.id}
@@ -245,6 +250,8 @@ function App() {
                 {currentPage === "dashboard" && "Visão Geral & Stress Testing"}
                 {currentPage === "recovery" &&
                   "Otimizador de Lucro Oculto & Piloto de Tesouraria"}
+                {currentPage === "intelligence" &&
+                  "Central de Inteligência Corporativa & Valuation"}
                 {currentPage === "transactions" &&
                   "Gestão de Lançamentos & Provisões"}
                 {currentPage === "profit" &&
@@ -278,6 +285,7 @@ function App() {
         <main className="flex-1 p-4 sm:p-8 max-w-7xl w-full mx-auto overflow-y-auto print:p-0 print:max-w-none">
           {currentPage === "dashboard" && <Dashboard />}
           {currentPage === "recovery" && <ProfitRecoveryEngine />}
+          {currentPage === "intelligence" && <AdvancedIntelligenceHub />}
           {currentPage === "transactions" && <TransactionsManager />}
           {currentPage === "profit" && <ProfitAnalytics />}
           {currentPage === "forecast" && <CashFlowForecast />}
