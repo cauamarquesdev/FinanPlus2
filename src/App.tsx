@@ -5,12 +5,20 @@ import Reports from "./components/Reports";
 import Settings from "./components/Settings";
 import Login from "./components/Login";
 import { TransactionsManager } from "./components/TransactionsManager";
+import CashFlowForecast from "./components/CashFlowForecast";
+import ProfitAnalytics from "./components/ProfitAnalytics";
+import ExecutiveHub from "./components/ExecutiveHub";
+import CreditAndSchedule from "./components/CreditAndSchedule";
 import { User } from "./types";
 import CfoCopilot from "./components/CfoCopilot";
 import CommandPalette from "./components/CommandPalette";
 import {
   LayoutDashboard,
   Receipt,
+  Award,
+  TrendingUp,
+  Briefcase,
+  CalendarDays,
   Users,
   PieChart,
   Settings as SettingsIcon,
@@ -21,7 +29,16 @@ import {
   Search,
 } from "lucide-react";
 
-type Page = "dashboard" | "transactions" | "clients" | "reports" | "settings";
+type Page =
+  | "dashboard"
+  | "transactions"
+  | "profit"
+  | "forecast"
+  | "executive"
+  | "credit_schedule"
+  | "clients"
+  | "reports"
+  | "settings";
 
 const getStoredItem = (key: string): string | null => {
   return localStorage.getItem(key) || sessionStorage.getItem(key);
@@ -75,6 +92,10 @@ function App() {
   const navItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
     { id: "transactions", label: "Lançamentos", icon: Receipt },
+    { id: "profit", label: "Lucratividade & EBITDA", icon: Award },
+    { id: "forecast", label: "Previsão & Forecast", icon: TrendingUp },
+    { id: "executive", label: "Executive Deck (PDF)", icon: Briefcase },
+    { id: "credit_schedule", label: "Score & Liquidez", icon: CalendarDays },
     { id: "clients", label: "Clientes", icon: Users },
     { id: "reports", label: "Relatórios & DRE", icon: PieChart },
     { id: "settings", label: "Configurações", icon: SettingsIcon },
@@ -127,7 +148,7 @@ function App() {
             <button
               type="button"
               onClick={() => setSidebarOpen(false)}
-              className="p-1 text-slate-400 lg:hidden"
+              className="p-1 text-slate-400 lg:hidden cursor-pointer"
             >
               <X size={18} />
             </button>
@@ -146,7 +167,7 @@ function App() {
                       setCurrentPage(item.id);
                       setSidebarOpen(false);
                     }}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition ${
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition cursor-pointer ${
                       isActive
                         ? "bg-slate-800 text-white font-semibold"
                         : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
@@ -182,7 +203,7 @@ function App() {
           <button
             type="button"
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2 text-xs font-medium text-slate-400 hover:text-rose-400 rounded-lg transition"
+            className="w-full flex items-center gap-3 px-3 py-2 text-xs font-medium text-slate-400 hover:text-rose-400 rounded-lg transition cursor-pointer"
           >
             <LogOut className="h-4 w-4" />
             <span>Encerrar Sessão</span>
@@ -192,12 +213,12 @@ function App() {
 
       {/* Main Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-16 bg-white border-b border-slate-200 px-4 sm:px-8 flex items-center justify-between sticky top-0 z-30 shadow-2xs">
+        <header className="h-16 bg-white border-b border-slate-200 px-4 sm:px-8 flex items-center justify-between sticky top-0 z-30 shadow-2xs print:hidden">
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => setSidebarOpen(true)}
-              className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 lg:hidden"
+              className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 lg:hidden cursor-pointer"
             >
               <Menu size={20} />
             </button>
@@ -211,6 +232,14 @@ function App() {
                 {currentPage === "dashboard" && "Visão Geral & Stress Testing"}
                 {currentPage === "transactions" &&
                   "Gestão de Lançamentos & Provisões"}
+                {currentPage === "profit" &&
+                  "Análise de Lucratividade & EBITDA"}
+                {currentPage === "forecast" &&
+                  "Previsão de Caixa & Scenario Planning"}
+                {currentPage === "executive" &&
+                  "Executive Deck & Matriz de Decisões"}
+                {currentPage === "credit_schedule" &&
+                  "Score de Crédito & Liquidez Diária"}
                 {currentPage === "clients" && "Gestão de Clientes"}
                 {currentPage === "reports" && "Relatórios e Balancetes"}
                 {currentPage === "settings" && "Configurações"}
@@ -221,7 +250,7 @@ function App() {
           <button
             type="button"
             onClick={() => setCommandOpen(true)}
-            className="flex items-center gap-3 px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-500 text-xs transition"
+            className="flex items-center gap-3 px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-500 text-xs transition cursor-pointer"
           >
             <Search size={14} />
             <span className="hidden sm:inline">Buscar ou executar ação...</span>
@@ -231,9 +260,13 @@ function App() {
           </button>
         </header>
 
-        <main className="flex-1 p-4 sm:p-8 max-w-7xl w-full mx-auto overflow-y-auto">
+        <main className="flex-1 p-4 sm:p-8 max-w-7xl w-full mx-auto overflow-y-auto print:p-0 print:max-w-none">
           {currentPage === "dashboard" && <Dashboard />}
           {currentPage === "transactions" && <TransactionsManager />}
+          {currentPage === "profit" && <ProfitAnalytics />}
+          {currentPage === "forecast" && <CashFlowForecast />}
+          {currentPage === "executive" && <ExecutiveHub />}
+          {currentPage === "credit_schedule" && <CreditAndSchedule />}
           {currentPage === "clients" && <Clients />}
           {currentPage === "reports" && <Reports />}
           {currentPage === "settings" && <Settings />}
