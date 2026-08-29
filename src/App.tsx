@@ -10,7 +10,9 @@ import ProfitAnalytics from "./components/ProfitAnalytics";
 import ExecutiveHub from "./components/ExecutiveHub";
 import CreditAndSchedule from "./components/CreditAndSchedule";
 import ProfitRecoveryEngine from "./components/ProfitRecoveryEngine";
-import AdvancedIntelligenceHub from "./components/AdvancedIntelligenceHub";
+import LeverageInvestments from "./components/LeverageInvestments";
+import DebtManagement from "./components/DebtManagement";
+import BillingSettings from "./components/BillingSettings";
 import { User } from "./types";
 import CfoCopilot from "./components/CfoCopilot";
 import CommandPalette from "./components/CommandPalette";
@@ -24,9 +26,11 @@ import {
   CalendarDays,
   Users,
   PieChart,
+  CreditCard,
   Settings as SettingsIcon,
   LogOut,
-  Zap,
+  Rocket,
+  Scale,
   Menu,
   X,
   ChevronRight,
@@ -36,7 +40,8 @@ import {
 type Page =
   | "dashboard"
   | "recovery"
-  | "intelligence"
+  | "leverage"
+  | "debt"
   | "transactions"
   | "profit"
   | "forecast"
@@ -44,6 +49,7 @@ type Page =
   | "credit_schedule"
   | "clients"
   | "reports"
+  | "billing"
   | "settings";
 
 const getStoredItem = (key: string): string | null => {
@@ -98,7 +104,8 @@ function App() {
   const navItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
     { id: "recovery", label: "Lucro Oculto & Tesouraria", icon: Sparkles },
-    { id: "intelligence", label: "Valuation & Inteligência", icon: Zap },
+    { id: "leverage", label: "Alavancagem & Investimentos", icon: Rocket },
+    { id: "debt", label: "Endividamento & Passivos", icon: Scale },
     { id: "transactions", label: "Lançamentos", icon: Receipt },
     { id: "profit", label: "Lucratividade & EBITDA", icon: Award },
     { id: "forecast", label: "Previsão & Forecast", icon: TrendingUp },
@@ -106,6 +113,7 @@ function App() {
     { id: "credit_schedule", label: "Score & Liquidez", icon: CalendarDays },
     { id: "clients", label: "Clientes", icon: Users },
     { id: "reports", label: "Relatórios & DRE", icon: PieChart },
+    { id: "billing", label: "Minha Assinatura", icon: CreditCard },
     { id: "settings", label: "Configurações", icon: SettingsIcon },
   ] as const;
 
@@ -168,7 +176,7 @@ function App() {
                 const Icon = item.icon;
                 const isActive = currentPage === item.id;
                 const isSpecial =
-                  item.id === "recovery" || item.id === "intelligence";
+                  item.id === "recovery" || item.id === "leverage";
                 return (
                   <button
                     key={item.id}
@@ -250,8 +258,9 @@ function App() {
                 {currentPage === "dashboard" && "Visão Geral & Stress Testing"}
                 {currentPage === "recovery" &&
                   "Otimizador de Lucro Oculto & Piloto de Tesouraria"}
-                {currentPage === "intelligence" &&
-                  "Central de Inteligência Corporativa & Valuation"}
+                {currentPage === "leverage" &&
+                  "Alavancagem Financeira & Investimentos"}
+                {currentPage === "debt" && "Gestão de Endividamento & Passivos"}
                 {currentPage === "transactions" &&
                   "Gestão de Lançamentos & Provisões"}
                 {currentPage === "profit" &&
@@ -264,6 +273,7 @@ function App() {
                   "Score de Crédito & Liquidez Diária"}
                 {currentPage === "clients" && "Gestão de Clientes"}
                 {currentPage === "reports" && "Relatórios e Balancetes"}
+                {currentPage === "billing" && "Minha Assinatura"}
                 {currentPage === "settings" && "Configurações"}
               </h1>
             </div>
@@ -285,7 +295,8 @@ function App() {
         <main className="flex-1 p-4 sm:p-8 max-w-7xl w-full mx-auto overflow-y-auto print:p-0 print:max-w-none">
           {currentPage === "dashboard" && <Dashboard />}
           {currentPage === "recovery" && <ProfitRecoveryEngine />}
-          {currentPage === "intelligence" && <AdvancedIntelligenceHub />}
+          {currentPage === "leverage" && <LeverageInvestments />}
+          {currentPage === "debt" && <DebtManagement />}
           {currentPage === "transactions" && <TransactionsManager />}
           {currentPage === "profit" && <ProfitAnalytics />}
           {currentPage === "forecast" && <CashFlowForecast />}
@@ -293,6 +304,7 @@ function App() {
           {currentPage === "credit_schedule" && <CreditAndSchedule />}
           {currentPage === "clients" && <Clients />}
           {currentPage === "reports" && <Reports />}
+          {currentPage === "billing" && <BillingSettings />}
           {currentPage === "settings" && <Settings />}
         </main>
       </div>
