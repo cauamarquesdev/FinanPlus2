@@ -1,39 +1,34 @@
 const { Pool } = require("pg");
-const dotenv = require("dotenv");
+require("dotenv").config();
 
-dotenv.config();
-
-const isProduction =
-  process.env.NODE_ENV === "production" ||
-  !process.env.DATABASE_URL?.includes("localhost");
+// 1. DEBUG: Vamos ver o que o Node.js está realmente enxergando
+const dbUrl = process.env.DATABASE_URL;
+console.log(
+  "🔍 URL carregada no env:",
+  dbUrl ? dbUrl.substring(0, 25) + "..." : "NENHUMA (Undefined)",
+);
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: isProduction
-    ? {
-        rejectUnauthorized: false,
-      }
-    : false,
-  max: 20, // Limite máximo de clientes simultâneos no pool
-  idleTimeoutMillis: 30000, // Encerra clientes ociosos após 30s
-  connectionTimeoutMillis: 5000, // Timeout de 5s ao tentar conectar
+  connectionString: dbUrl,
+  // Força o SSL absoluto sem nenhuma condicional
+  ssl: {
+    rejectUnauthorized: false,
+  },
+  connectionTimeoutMillis: 10000, // Dá 10 segundos pro Neon "acordar"
 });
 
 pool.on("error", (err) => {
-  console.error(
-    "⚠️ Erro inesperado em cliente ocioso do PostgreSQL:",
-    err.message,
-  );
+  console.error("⚠️ Erro no Pool:", err.message);
 });
 
-// Verificação não bloqueante de inicialização
+// Testa a conexão imediatamente
 pool
-  .query("SELECT current_database(), current_user")
-  .then((res) => {
-    console.log("✅ PostgreSQL Conectado com sucesso:", res.rows[0]);
+  .query("SELECT 1 AS conectado")
+  .then(() => {
+    console.log("✅ Neon conectado com sucesso absoluto!");
   })
   .catch((err) => {
-    console.error("❌ Falha crítica ao conectar no PostgreSQL:", err.message);
+    console.error("❌ Erro exato de conexão:", err.message);
   });
 
 module.exports = pool;
